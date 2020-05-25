@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Conhics", "Conhics\Conhics.csproj", "{98BEC141-902B-4EE6-9546-43521BCEB4DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testproj", "Testproj\Testproj.csproj", "{F0F34720-E4A9-4D94-B7DB-381EEF5CF4C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98BEC141-902B-4EE6-9546-43521BCEB4DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98BEC141-902B-4EE6-9546-43521BCEB4DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98BEC141-902B-4EE6-9546-43521BCEB4DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98BEC141-902B-4EE6-9546-43521BCEB4DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0F34720-E4A9-4D94-B7DB-381EEF5CF4C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0F34720-E4A9-4D94-B7DB-381EEF5CF4C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0F34720-E4A9-4D94-B7DB-381EEF5CF4C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0F34720-E4A9-4D94-B7DB-381EEF5CF4C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E928AE03-6C0C-4213-A43B-C583D8B5CCF3}
+	EndGlobalSection
+EndGlobal

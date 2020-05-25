@@ -1,0 +1,9 @@
+/.vs
+/Testproj
+/Properties
+
+/bin
+bin/
+/obj
+obj/
+Properties/

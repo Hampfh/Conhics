@@ -64,9 +64,6 @@ namespace Conhics {
                 Console.SetBufferSize(columns, rows);
                 Console.SetWindowPosition(0, 0);
             }
-
-            var siz = Console.WindowWidth;
-            var sizHeight = Console.WindowHeight;
         }
 
         private static void EventCatcher() {
@@ -137,7 +134,7 @@ namespace Conhics {
         }
 
         public static void Print(char character, int x, int y, short attribute = 7) {
-            if (s_virtualWin[y * x + x].Char.UnicodeChar.Equals(character)) return;
+            if (s_virtualWin[y * s_width + x].Char.UnicodeChar.Equals(character)) return;
             s_virtualWin[y * s_width + x].Attributes = attribute;
             s_virtualWin[y * s_width + x].Char.UnicodeChar = character;
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,9 +16,16 @@ namespace Conhics {
         private static Integration.SmallRect s_rect;
         private static int s_width;
         private static int s_height;
+        private static ConsoleKeyInfo? s_lastKey;
 
-        public static void Setup() {
+        public static void Setup(string title = "", int columns = 120, int rows = 30, short charWidth = 8, short charHeight = 16) {
+            if (title.Length > 0)
+                Console.Title = title;
+
+            SetupWindowAndFontSize(columns, rows, charWidth, charHeight);
+
             Console.CursorVisible = false;
+
             s_width = Console.WindowWidth;
             s_height = Console.WindowHeight;
 
@@ -29,18 +37,66 @@ namespace Conhics {
             s_virtualWin = new Integration.CharInfo[s_width * s_height];
             s_rect = new Integration.SmallRect() { Left = 0, Top = 0, Right = Convert.ToInt16(s_width), Bottom = Convert.ToInt16(s_height) };
 
+            // Start event handler
+            new Thread(EventCatcher).Start();
+
             Clear();
+        }
+
+        public static void SetupWindowAndFontSize(int columns, int rows, short charPixelWidth, short charPixelHeight) {
+            // Setting the font and fontsize
+            // Other values can be changed too
+
+            // Instantiating CONSOLE_FONT_INFO_EX and setting its size (the function will fail otherwise)
+            Integration.CONSOLE_FONT_INFO_EX ConsoleFontInfo = new Integration.CONSOLE_FONT_INFO_EX();
+            ConsoleFontInfo.cbSize = (uint)Marshal.SizeOf(ConsoleFontInfo);
+
+            // Optional, implementing this will keep the fontweight and fontsize from changing
+            // See notes
+            // GetCurrentConsoleFontEx(GetStdHandle(StdHandle.OutputHandle), false, ref ConsoleFontInfo);
+            ConsoleFontInfo.FontFamily = 3000;
+            ConsoleFontInfo.dwFontSize.X = (short)(charPixelWidth + 1);
+            ConsoleFontInfo.dwFontSize.Y = charPixelHeight;
+
+            if (Integration.SetCurrentConsoleFontEx(Integration.GetStdHandle((int) Integration.StdHandle.OutputHandle),
+                false, ref ConsoleFontInfo)) {
+                Console.SetWindowSize(columns, rows);
+                Console.SetBufferSize(columns, rows);
+                Console.SetWindowPosition(0, 0);
+            }
+
+            var siz = Console.WindowWidth;
+            var sizHeight = Console.WindowHeight;
+        }
+
+        private static void EventCatcher() {
+            while (true) {
+                s_lastKey = Console.ReadKey(true);
+            }
+        }
+
+        public static ConsoleKeyInfo? GetLastKey(bool autoClear = true) {
+            var outgoing = s_lastKey;
+            if (autoClear)
+                s_lastKey = null;
+            return outgoing;
         }
 
         public static string Input(string displayText, int x, int y, bool enforceInput) {
             Console.CursorVisible = true;
+
             Console.SetCursorPosition(x, y);
             Console.Write(displayText + ": ");
             int offsetX = displayText.Length + 2;
             var data = "";
             var typeLength = 0;
             while (true) {
-                var key = Console.ReadKey(true);
+                var result = GetLastKey(false);
+                if (result == null)
+                    continue;
+                var key = result.Value;
+                // Manually reset last key
+                s_lastKey = null;
 
                 switch (key.Key) {
                     case ConsoleKey.Spacebar:
@@ -52,6 +108,7 @@ namespace Conhics {
                     case ConsoleKey.Enter when enforceInput && data.Length <= 0:
                         break;
                     case ConsoleKey.Enter:
+                        Console.CursorVisible = false;
                         return data;
                     case ConsoleKey.Backspace when typeLength > 0:
                         data = data.Substring(0, data.Length - 1);
@@ -72,7 +129,6 @@ namespace Conhics {
                     Console.Write(key.KeyChar.ToString());
                     typeLength++;
                 }
-                Console.CursorVisible = false;
             }
         }
 

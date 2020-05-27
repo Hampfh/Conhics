@@ -17,6 +17,7 @@ namespace Conhics {
         private static int s_height;
 
         public static void Setup() {
+            Console.CursorVisible = false;
             s_width = Console.WindowWidth;
             s_height = Console.WindowHeight;
 
@@ -32,6 +33,7 @@ namespace Conhics {
         }
 
         public static string Input(string displayText, int x, int y, bool enforceInput) {
+            Console.CursorVisible = true;
             Console.SetCursorPosition(x, y);
             Console.Write(displayText + ": ");
             int offsetX = displayText.Length + 2;
@@ -70,6 +72,7 @@ namespace Conhics {
                     Console.Write(key.KeyChar.ToString());
                     typeLength++;
                 }
+                Console.CursorVisible = false;
             }
         }
 
@@ -89,8 +92,10 @@ namespace Conhics {
             if (x + text.Length > s_width)
                 text = text.Substring(0, text.Length - (x + text.Length - s_width));
 
-            for (var i = 0; i < text.Length; i++)
+            for (var i = 0; i < text.Length; i++) {
+                s_virtualWin[y * s_width + x + i].Attributes = attribute;
                 s_virtualWin[y * s_width + x + i].Char.UnicodeChar = text[i];
+            }
         }
 
         public static bool Flush() {

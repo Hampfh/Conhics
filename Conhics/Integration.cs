@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+
 using Microsoft.Win32.SafeHandles;
 
 namespace Conhics {
@@ -152,5 +149,16 @@ namespace Conhics {
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GetNumberOfConsoleInputEvents(IntPtr hConsoleInput, out uint lpcNumberOfEvents);
+        
+
+
+        public static void ManageNativeReturnValue<T>(T returnValue) {
+            if (returnValue is bool returnVal) {
+                // Manage Boolean return value
+                if (!returnVal) {
+                    throw new Win32Exception();
+                }
+            }
+        }
     }
 }

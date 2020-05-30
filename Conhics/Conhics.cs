@@ -133,20 +133,20 @@ namespace Conhics {
             return s_virtualWin[y * s_width + x].Char.UnicodeChar;
         }
 
-        public static void Print(char character, int x, int y, short attribute = 7) {
+        public static void Print(char character, int x, int y, ConsoleColor color = ConsoleColor.White) {
             if (s_virtualWin[y * s_width + x].Char.UnicodeChar.Equals(character)) return;
-            s_virtualWin[y * s_width + x].Attributes = attribute;
+            s_virtualWin[y * s_width + x].Attributes = (short)color;
             s_virtualWin[y * s_width + x].Char.UnicodeChar = character;
         }
 
-        public static void Print(string text, int x, int y, short attribute = 7) {
+        public static void Print(string text, int x, int y, ConsoleColor color = ConsoleColor.White) {
             if (x >= s_width)
                 throw new Exception("Out of bounds");
             if (x + text.Length > s_width)
                 text = text.Substring(0, text.Length - (x + text.Length - s_width));
 
             for (var i = 0; i < text.Length; i++) {
-                s_virtualWin[y * s_width + x + i].Attributes = attribute;
+                s_virtualWin[y * s_width + x + i].Attributes = (short)color;
                 s_virtualWin[y * s_width + x + i].Char.UnicodeChar = text[i];
             }
         }

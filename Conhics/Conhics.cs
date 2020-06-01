@@ -17,8 +17,9 @@ namespace Conhics {
         private static int s_width;
         private static int s_height;
         private static ConsoleKeyInfo? s_lastKey;
+        private static bool s_activeEventCapture;
 
-        public static void Setup(string title = "", int columns = 120, int rows = 30, short charWidth = 8, short charHeight = 16) {
+        public static void Setup(string title = "", int columns = 120, int rows = 30, short charWidth = 8, short charHeight = 16, bool activeEventCapture = true) {
             if (title.Length > 0)
                 Console.Title = title;
 
@@ -38,7 +39,8 @@ namespace Conhics {
             s_rect = new Integration.SmallRect() { Left = 0, Top = 0, Right = Convert.ToInt16(s_width), Bottom = Convert.ToInt16(s_height) };
 
             // Start event handler
-            new Thread(EventCatcher).Start();
+            if (activeEventCapture)
+                new Thread(EventCatcher).Start();
 
             Clear();
         }
@@ -73,6 +75,9 @@ namespace Conhics {
         }
 
         public static ConsoleKeyInfo? GetLastKey(bool autoClear = true) {
+            if (!s_activeEventCapture)
+                throw new Exception("This feature has been disabled in setup");
+
             var outgoing = s_lastKey;
             if (autoClear)
                 s_lastKey = null;
@@ -80,6 +85,9 @@ namespace Conhics {
         }
 
         public static string Input(string displayText, int x, int y, bool enforceInput) {
+            if (!s_activeEventCapture)
+                throw new Exception("This feature has been disabled in setup");
+
             Console.CursorVisible = true;
 
             Console.SetCursorPosition(x, y);

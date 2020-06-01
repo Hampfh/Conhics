@@ -20,6 +20,8 @@ namespace Conhics {
         private static bool s_activeEventCapture;
 
         public static void Setup(string title = "", int columns = 120, int rows = 30, short charWidth = 8, short charHeight = 16, bool activeEventCapture = true) {
+            s_activeEventCapture = activeEventCapture;
+
             if (title.Length > 0)
                 Console.Title = title;
 

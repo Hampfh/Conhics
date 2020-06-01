@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Microsoft.Win32.SafeHandles;
+
+[assembly: InternalsVisibleTo("Congui")]
 
 namespace Conhics {
     internal class Integration {

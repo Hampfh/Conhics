@@ -113,6 +113,8 @@ namespace Conhics {
             public KEY_EVENT_RECORD KeyEvent;
             [FieldOffset(4)]
             public MOUSE_EVENT_RECORD MouseEvent;
+            [FieldOffset(4)]
+            public WINDOW_BUFFER_SIZE_RECORD WindowBufferSizeEvent;
         }
 
         public struct MOUSE_EVENT_RECORD {
@@ -139,6 +141,10 @@ namespace Conhics {
             public byte AsciiChar;
             [FieldOffset(12)]
             public int dwControlKeyState;
+        };
+
+        public struct WINDOW_BUFFER_SIZE_RECORD {
+            public COORD dwSize;
         };
         
         [DllImport("kernel32.dll", SetLastError = true)]

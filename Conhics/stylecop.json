@@ -1,0 +1,9 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "companyName": "Hampfh and haholm",
+      "copyrightText": "Copyright (c) Hampfh and haholm. All rights reserved."
+    }
+  }
+}

@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+
 using Microsoft.Win32.SafeHandles;
 
-namespace Conhics {
+using Conhics.Input;
+
+namespace Conhics
+{
     public class Window {
         private static SafeFileHandle s_handle;
         private static Integration.CharInfo[] s_virtualWin;
@@ -47,10 +45,16 @@ namespace Conhics {
             s_rect = new Integration.SmallRect() { Left = 0, Top = 0, Right = Convert.ToInt16(s_width), Bottom = Convert.ToInt16(s_height) };
 
             // Start event handler
+<<<<<<< Updated upstream
             if (activeEventCapture) {
                 s_taskRunning = true;
                 new Task(EventCatcher).Start();
             }
+=======
+            // if (activeEventCapture)
+            //     new Thread(EventCatcher).Start();
+            Keyboard.IsEnabled = activeEventCapture;
+>>>>>>> Stashed changes
 
             Clear();
         }
@@ -103,27 +107,29 @@ namespace Conhics {
                 false, ref consoleFontInfo)) return;
         }
 
-        private static void EventCatcher() {
-            while (s_taskRunning) {
-                if (Console.KeyAvailable)
-                    s_lastKey = Console.ReadKey(true);
-            }
-        }
-
         private static bool SizeHasUpdated() {
             return Console.WindowWidth != s_width || Console.WindowHeight != s_height || 
                    Console.BufferWidth != s_width || Console.BufferHeight != s_height;
         }
 
-        public static ConsoleKeyInfo? GetLastKey(bool autoClear = true) {
-            if (!s_activeEventCapture)
-                throw new Exception("This feature has been disabled in setup");
+        // ### Keyboard input is now retrieved from Conhics.Input.Keyboard.Input as a Conhics.Input.KeyboardInput struct. ###
 
-            var outgoing = s_lastKey;
-            if (autoClear)
-                s_lastKey = null;
-            return outgoing;
-        }
+        // private static void EventCatcher() {
+        //     while (s_taskRunning) {
+        //         if (Console.KeyAvailable)
+        //             s_lastKey = Console.ReadKey(true);
+        //     }
+        // }
+
+        // public static ConsoleKeyInfo? GetLastKey(bool autoClear = true) {
+        //     if (!s_activeEventCapture)
+        //         throw new Exception("This feature has been disabled in setup");
+        //
+        //     var outgoing = s_lastKey;
+        //     if (autoClear)
+        //         s_lastKey = null;
+        //     return outgoing;
+        // }
 
         public static string Input(string displayText, int x, int y, bool enforceInput) {
             if (!s_activeEventCapture)

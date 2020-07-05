@@ -18,6 +18,7 @@ namespace Conhics {
         private static int s_height;
         private static ConsoleKeyInfo? s_lastKey;
         private static bool s_activeEventCapture;
+        private static bool s_taskRunning;
 
         public static void Setup(string title = "", int columns = 120, int rows = 30, short charWidth = 8, short charHeight = 16, bool activeEventCapture = true) {
             s_activeEventCapture = activeEventCapture;
@@ -25,7 +26,12 @@ namespace Conhics {
             if (title.Length > 0)
                 Console.Title = title;
 
-            SetupWindowAndFontSize(columns, rows, charWidth, charHeight);
+            if (Console.LargestWindowWidth < columns || Console.LargestWindowHeight < rows)
+                throw new Exception("Requested window size exceeds the screen capacity");
+
+            SetupFontSize(charWidth, charHeight);
+            SetConsoleDimension(columns, rows);
+            Console.SetWindowPosition(0, 0);
 
             Console.CursorVisible = false;
 
@@ -41,39 +47,72 @@ namespace Conhics {
             s_rect = new Integration.SmallRect() { Left = 0, Top = 0, Right = Convert.ToInt16(s_width), Bottom = Convert.ToInt16(s_height) };
 
             // Start event handler
-            if (activeEventCapture)
-                new Thread(EventCatcher).Start();
+            if (activeEventCapture) {
+                s_taskRunning = true;
+                new Task(EventCatcher).Start();
+            }
 
             Clear();
         }
 
-        public static void SetupWindowAndFontSize(int columns, int rows, short charPixelWidth, short charPixelHeight) {
-            // Setting the font and fontsize
-            // Other values can be changed too
+        private static int UpdateConsoleSize(int width, int height) {
 
-            // Instantiating CONSOLE_FONT_INFO_EX and setting its size (the function will fail otherwise)
-            Integration.CONSOLE_FONT_INFO_EX ConsoleFontInfo = new Integration.CONSOLE_FONT_INFO_EX();
-            ConsoleFontInfo.cbSize = (uint)Marshal.SizeOf(ConsoleFontInfo);
+            s_virtualWin = new Integration.CharInfo[width * height];
+            s_rect = new Integration.SmallRect() { Left = 0, Top = 0, Right = Convert.ToInt16(width), Bottom = Convert.ToInt16(height) };
+            Console.CursorVisible = false;
 
-            // Optional, implementing this will keep the fontweight and fontsize from changing
-            // See notes
-            // GetCurrentConsoleFontEx(GetStdHandle(StdHandle.OutputHandle), false, ref ConsoleFontInfo);
-            ConsoleFontInfo.FontFamily = 3000;
-            ConsoleFontInfo.dwFontSize.X = (short)(charPixelWidth + 1);
-            ConsoleFontInfo.dwFontSize.Y = charPixelHeight;
+            s_width = width;
+            s_height = height;
 
-            if (Integration.SetCurrentConsoleFontEx(Integration.GetStdHandle((int) Integration.StdHandle.OutputHandle),
-                false, ref ConsoleFontInfo)) {
-                Console.SetWindowSize(columns, rows);
-                Console.SetBufferSize(columns, rows);
+            return SetConsoleDimension(width, height);
+        }
+
+        private static int SetConsoleDimension(int width, int height) {
+
+            try {
+                Console.SetWindowSize(width, height);
+                Console.SetBufferSize(width, height);
                 Console.SetWindowPosition(0, 0);
             }
+            catch (IOException) {
+                return 1;
+            }
+            catch (ArgumentOutOfRangeException) {
+                return 1;
+            }
+
+            return 0;
+        }
+
+        public static void CleanUp() {
+            s_taskRunning = false;
+            Clear();
+            Flush();
+        }
+
+        private static void SetupFontSize(short charPixelWidth, short charPixelHeight) {
+            // Instantiating CONSOLE_FONT_INFO_EX and setting its size (the function will fail otherwise)
+            Integration.CONSOLE_FONT_INFO_EX consoleFontInfo = new Integration.CONSOLE_FONT_INFO_EX();
+            consoleFontInfo.cbSize = (uint)Marshal.SizeOf(consoleFontInfo);
+
+            consoleFontInfo.FontFamily = 3000;
+            consoleFontInfo.dwFontSize.X = (short)(charPixelWidth + 1);
+            consoleFontInfo.dwFontSize.Y = charPixelHeight;
+
+            if (!Integration.SetCurrentConsoleFontEx(Integration.GetStdHandle((int) Integration.StdHandle.OutputHandle),
+                false, ref consoleFontInfo)) return;
         }
 
         private static void EventCatcher() {
-            while (true) {
-                s_lastKey = Console.ReadKey(true);
+            while (s_taskRunning) {
+                if (Console.KeyAvailable)
+                    s_lastKey = Console.ReadKey(true);
             }
+        }
+
+        private static bool SizeHasUpdated() {
+            return Console.WindowWidth != s_width || Console.WindowHeight != s_height || 
+                   Console.BufferWidth != s_width || Console.BufferHeight != s_height;
         }
 
         public static ConsoleKeyInfo? GetLastKey(bool autoClear = true) {
@@ -144,14 +183,25 @@ namespace Conhics {
         }
 
         public static void Print(char character, int x, int y, ConsoleColor color = ConsoleColor.White) {
+            if (x >= s_width ||
+                y >= s_height ||
+                x < 0 || y < 0)
+                throw new Exception("Out of bounds");
+
+            // Don't print a character if it already exists
             if (s_virtualWin[y * s_width + x].Char.UnicodeChar.Equals(character)) return;
+
             s_virtualWin[y * s_width + x].Attributes = (short)color;
             s_virtualWin[y * s_width + x].Char.UnicodeChar = character;
         }
 
         public static void Print(string text, int x, int y, ConsoleColor color = ConsoleColor.White) {
-            if (x >= s_width)
+            if (x >= s_width ||
+                y >= s_height ||
+                x < 0 || y < 0)
                 throw new Exception("Out of bounds");
+
+            // Crop away the text that's out of the screen
             if (x + text.Length > s_width)
                 text = text.Substring(0, text.Length - (x + text.Length - s_width));
 
@@ -161,7 +211,16 @@ namespace Conhics {
             }
         }
 
+        public static bool UpdateDimensions() {
+            if (Console.WindowTop != 0)
+                Console.SetWindowPosition(0, 0);
+
+            return SizeHasUpdated() && UpdateConsoleSize(Console.WindowWidth, Console.WindowHeight) == 1;
+        }
+
         public static bool Flush() {
+            UpdateDimensions();
+
             return Integration.WriteConsoleOutputW(s_handle, s_virtualWin,
                 new Integration.Coord() { X = Convert.ToInt16(s_width), Y = Convert.ToInt16(s_height) },
                 new Integration.Coord() { X = 0, Y = 0 },

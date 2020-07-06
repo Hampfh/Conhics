@@ -36,7 +36,12 @@
             if (title.Length > 0)
                 Console.Title = title;
 
-            if (Console.LargestWindowWidth < columns || Console.LargestWindowHeight < rows)
+            // Calculate how much larger/smaller the characters are than default
+            int charWidthPercentage = 8 / charWidth;
+            int charHeightPercentage = 16 / charHeight;
+
+            if (Console.LargestWindowWidth * charWidthPercentage < columns ||
+                Console.LargestWindowHeight * charHeightPercentage < rows)
                 throw new Exception("Requested window size exceeds the screen capacity");
 
             SetupFontSize(charWidth, charHeight);
@@ -270,7 +275,7 @@
             consoleFontInfo.cbSize = (uint)Marshal.SizeOf(consoleFontInfo);
 
             consoleFontInfo.FontFamily = 3000;
-            consoleFontInfo.dwFontSize.X = (short)(charPixelWidth + 1);
+            consoleFontInfo.dwFontSize.X = charPixelWidth;
             consoleFontInfo.dwFontSize.Y = charPixelHeight;
 
             Integration.SetCurrentConsoleFontEx(Integration.GetStdHandle((int)Integration.StdHandle.OutputHandle), false, ref consoleFontInfo);

@@ -84,7 +84,7 @@ namespace Conhics.Events {
                         }
                     });
                 Stopwatch.Stop();
-                double preferredEventDuration = 1000 / PreferredEventsPerSecond;
+                double preferredEventDuration = 1000 / (double)PreferredEventsPerSecond;
                 if (Stopwatch.ElapsedMilliseconds < preferredEventDuration) {
                     Thread.Sleep((int)(preferredEventDuration - Stopwatch.ElapsedMilliseconds));
                 }

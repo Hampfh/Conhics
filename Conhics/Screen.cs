@@ -102,7 +102,6 @@
                     continue;
 
                 var keyPress = Keyboard.Input.Value;
-                Keyboard.Input = null;
 
                 if (!keyPress.KeyDown)
                     continue;

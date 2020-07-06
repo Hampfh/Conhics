@@ -3,12 +3,13 @@
 // </copyright>
 
 namespace Conhics.Input {
+    using System.Collections.Concurrent;
+
     /// <summary>
     /// Contains functionality for keyboard input.
     /// </summary>
     public class Keyboard {
-
-        private static KeyboardInput? currentInput;
+        public static readonly ConcurrentQueue<KeyboardInput> inputQueue = new ConcurrentQueue<KeyboardInput>();
 
         /// <summary>
         /// Gets or sets a value indicating whether keyboard input is enabled - true, or disabled - false.
@@ -29,13 +30,24 @@ namespace Conhics.Input {
         /// Gets an instance of the <see cref="KeyboardInput"/> struct with the most recent keyboard input.
         /// </summary>
         /// <value>An instance of the <see cref="KeyboardInput"/> struct with the most recent keyboard input.</value>
-        public static KeyboardInput? Input { get; internal set; }
+        public static KeyboardInput? Input {
+            get {
+                if (inputQueue.TryDequeue(out var firstInput))
+                    return firstInput;
+
+                return LastInput;
+            }
+        }
+
+        public static KeyboardInput? LastInput { get; internal set; }
 
         /// <summary>
-        /// Clear the latest event. Set to null.
+        /// Push the latest input to the end of the input queue.
         /// </summary>
-        public static void ClearLastInput() {
-            Input = null;
+        internal static void EnqueueInput(KeyboardInput input) {
+            if (inputQueue.Count >= 50)
+                inputQueue.TryDequeue(out _);
+            inputQueue.Enqueue(input);
         }
     }
 }

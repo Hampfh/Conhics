@@ -47,7 +47,9 @@ namespace Conhics.Input {
             s_numberOfInputEvents -= s_numberOfInputEventsRead;
             switch ((EventTypes)s_inputRecord.EventType) {
                 case EventTypes.KeyEvent:
-                    Keyboard.Input = new KeyboardInput(s_inputRecord.KeyEvent);
+                    var input = new KeyboardInput(s_inputRecord.KeyEvent);
+                    Keyboard.LastInput = input;
+                    Keyboard.EnqueueInput(input);
                     break;
                 case EventTypes.MouseEvent:
                     Mouse.Input = new MouseInput(s_inputRecord.MouseEvent);

@@ -1,5 +1,5 @@
 # Conhics
-Conhics is a library created to make high-frequency updates to the console without delay. Instead of using `Console.Writeline` Conhics directly accessees the console buffer and thereby enables for extremely high-speed updates. This allows for creating real time games in the console without lag and/or delay.
+Conhics is a library created to make high-frequency updates to the console without delay. Instead of using `Console.Writeline` Conhics directly accesses the console buffer and thereby enables for extremely high-speed updates. This allows for creating real-time games in the console without lag and/or delay.
 ## Content
 * [Library methods](#library-methods)
   * [Screen.Setup()](#screensetup)
@@ -8,6 +8,9 @@ Conhics is a library created to make high-frequency updates to the console witho
   * [Screen.Clear()](#screenclear)
   * [Screen.GetPos()](#screengetpos)
   * [Screen.Input()](#screeninput)
+* [Events](#events)
+  * [Keyboard Events](#keyboard-events)
+  * [Mouse Events](#mouse-events)
 * [Examples](#examples)
   * [Setup](#setup)
   * [Snake](#snake-game)
@@ -35,7 +38,7 @@ The setup has to be called before all other Conhcis commands as the library depe
 void Screen.Print(char character, int x, int y, ConsoleColor color = ConsoleColor.White);
 void Screen.Print(string text, int x, int y, ConsoleColor color = ConsoleColor.White);
 ```
-The print command is what is used to make changes to the console. Print either takes a character or a text and adds it to the entered coordinate **(Note that the windows console has (0,0) in the top left corner)**. It is also possible to color each individual print with the windows object `ConsoleColor`. However what is important to note is that Print does NOT render anything to the screen, instead everything is cached in memory until the `Screen.Flush()` command is called.
+The print command is what is used to make changes to the console. Print either takes a character or a text and adds it to the entered coordinate **(Note that the windows console has (0,0) in the top left corner)**. It is also possible to color each individual print with the windows object `ConsoleColor`. However what is important to note is that Print does NOT render anything to the screen, instead, everything is cached in memory until the `Screen.Flush()` command is called.
 
 ### Screen.Flush()
 ```csharp
@@ -47,7 +50,7 @@ Flush gathers everything that has been inputted with `Screen.Print()` and render
 ```csharp
 void Screen.Clear();
 ```
-Clear cleans the internal cache. Clear does NOT render the screen blank. To clear the console it is therefore necessary to call `Screen.Clear()` followed by `Screen.Flush()` to render the changes.
+Clear cleans the internal cache. Clear does NOT render the screen blank. To clear the console it is, therefore, necessary to call `Screen.Clear()` followed by `Screen.Flush()` to render the changes.
 
 ### Screen.GetPos()
 ```csharp
@@ -55,17 +58,60 @@ char Screen.GetPos(int x, int y);
 ```
 Retrieves the character present at the targeted location on the screen.
 
-### Screen.GetLastKey()
-```csharp
-ConsoleKeyInfo? Screen.GetLastKey(bool autoClear = true);
-```
-GetLastKey returns the last key the user hit when called. If `autoClear` is true the key is popped from the stack when fetched, otherwise it will stay until another key overrides it. If there are no keys hit since last time called the method returns null.
-
 ### Screen.Input()
 ```csharp
 string Screen.Input(string displayText, int x, int y, bool enforceInput);
 ```
-The input method is very similar to the normal `Console.ReadLine` but with some extras attached to it. First the parameter `displayText` is used to present text before the actual input such as `Name:`. The method then requires a position to start the input from which is decided with the `x` and `y`. Last the argument `enforceInput` is used to prevent users from returning empty strings. If this setting is true the method requires the user to input at least one character before it returns.
+The input method is very similar to the normal `Console.ReadLine` but with some extras attached to it. First, the parameter `displayText` is used to present text before the actual input such as `Name:`. The method then requires a position to start the input from which is decided with the `x` and `y`. Last the argument `enforceInput` is used to prevent users from returning empty strings. If this setting is true the method requires the user to input at least one character before it returns.
+
+## Events
+
+Conhics has its own event system enabling advanced user interaction. By using this event system it is possible to fetch both keyboard and mouse events and use their properties. To get access to this feature make sure that the variable `activeEventCapture` in `Setup()` is set to ```true```. Then include the event system like this:  
+```csharp
+using Conhics.Input
+```
+  
+All Conhics events are possible to fetch multiple times using their corresponding properties. However, if an event is considered used and therefore is not expected again it is possible to call the method `ClearLastInput` which will set the property to ```null```. This will prevent an event from bubbling up multiple times.
+
+### Keyboard events
+To get the latest keyboard event use the `Keyboard`'s class property named `Input`. This is a nullable `KeyboardInput` object which exposes the following attributes:  
+```csharp
+/// Whether or not the key is pressed.
+public readonly bool KeyDown;
+/// The amount of times the key was repeated through being held down since the last <see cref="KeyboardInput"/> instance.
+public readonly ushort KeyRepeatCount;
+
+/// The virtual-key code of the key pressed. Virtual-key codes: <see cref="!:https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes"/>.
+public readonly ushort VirtualKeyCode;
+
+/// Equal to virtual key code but with a cast to console key.
+public readonly ConsoleKey ConsoleKey;
+
+/// The Unicode character of the key that was pressed.
+public readonly char Character;
+
+/// The current keyboard state.
+public readonly KeyboardStates State;
+```
+
+### Mouse events
+Mouse events are handled in the `Mouse` class which similarly to `Keyboard` has a nullable Input property. This property has the following attributes.
+```csharp
+/// The X position of the mouse from the left.
+public readonly short X;
+
+/// The Y position of the mouse from the top.
+public readonly short Y;
+
+/// The mouse button that was pressed.
+public readonly MouseButtons Button;
+
+/// The mouse event that occurred.
+public readonly MouseEvents Event;
+
+/// The mouse scroll wheel direction.
+public readonly MouseWheelDirections MouseWheelDirection;
+```
 
 ## Examples
 ### Setup

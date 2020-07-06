@@ -5,7 +5,15 @@
     using Conhics.Input;
     using Microsoft.Win32.SafeHandles;
 
-    public class Window {
+    /**
+     * <summary>
+     * This is the core class of conhics.
+     * The screen class is responsible for
+     * direct updates to the console enabling
+     * for massive performance boosts.
+     * </summary>
+     */
+    public class Screen {
         private static SafeFileHandle s_handle;
         private static Integration.CharInfo[] s_virtualWin;
         private static Integration.SmallRect s_rect;
@@ -265,24 +273,5 @@
         private static bool SizeHasUpdated() {
             return Console.WindowWidth != s_width || Console.WindowHeight != s_height || Console.BufferWidth != s_width || Console.BufferHeight != s_height;
         }
-
-        // ### Keyboard input is now retrieved from Conhics.Input.Keyboard.Input as a Conhics.Input.KeyboardInput struct. ###
-
-        // private static void EventCatcher() {
-        //     while (s_taskRunning) {
-        //         if (Console.KeyAvailable)
-        //             s_lastKey = Console.ReadKey(true);
-        //     }
-        // }
-
-        // public static ConsoleKeyInfo? GetLastKey(bool autoClear = true) {
-        //     if (!s_activeEventCapture)
-        //         throw new Exception("This feature has been disabled in setup");
-        //
-        //     var outgoing = s_lastKey;
-        //     if (autoClear)
-        //         s_lastKey = null;
-        //     return outgoing;
-        // }
     }
 }

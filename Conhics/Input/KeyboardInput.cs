@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace Conhics.Input {
+    using System;
+
     /// <summary>
     /// Contains information regarding keyboard input.
     /// </summary>
@@ -23,6 +25,11 @@ namespace Conhics.Input {
         public readonly ushort VirtualKeyCode;
 
         /// <summary>
+        /// Equal to virtual key code but with a cast to console key.
+        /// </summary>
+        public readonly ConsoleKey ConsoleKey;
+
+        /// <summary>
         /// The Unicode character of the key that was pressed.
         /// </summary>
         public readonly char Character;
@@ -40,6 +47,7 @@ namespace Conhics.Input {
             this.KeyDown = keyEventRecord.bKeyDown;
             this.KeyRepeatCount = keyEventRecord.wRepeatCount;
             this.VirtualKeyCode = keyEventRecord.wVirtualKeyCode;
+            this.ConsoleKey = (ConsoleKey)keyEventRecord.wVirtualKeyCode;
             this.Character = keyEventRecord.UnicodeChar;
             this.State = (KeyboardStates)keyEventRecord.dwControlKeyState;
         }

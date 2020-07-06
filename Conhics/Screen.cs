@@ -19,6 +19,7 @@
         private static Integration.SmallRect s_rect;
         private static int s_width;
         private static int s_height;
+        private static bool s_activeEventCapture;
 
         /**
          * <summary>
@@ -30,6 +31,8 @@
          * </summary>
          */
         public static void Setup(string title = "", int columns = 120, int rows = 30, short charWidth = 8, short charHeight = 16, bool activeEventCapture = true) {
+            s_activeEventCapture = activeEventCapture;
+
             if (title.Length > 0)
                 Console.Title = title;
 
@@ -77,60 +80,63 @@
          * of a single event.
          * </summary>
          */
+        public static string Input(string displayText, int x, int y, bool enforceInput) {
+            if (!s_activeEventCapture)
+                throw new Exception("This feature has been disabled in setup");
 
-        // public static string Input(string displayText, int x, int y, bool enforceInput) {
-        //    if (!s_activeEventCapture)
-        //        throw new Exception("This feature has been disabled in setup");
-        //
-        //    Console.CursorVisible = true;
-        //
-        //    Console.SetCursorPosition(x, y);
-        //    Console.Write(displayText + ": ");
-        //    int offsetX = displayText.Length + 2;
-        //    var data = string.Empty;
-        //    var typeLength = 0;
-        //    while (true) {
-        //        var result = GetLastKey(false);
-        //        if (result == null)
-        //            continue;
-        //        var key = result.Value;
-        //
-        //        // Manually reset last key
-        //        s_lastKey = null;
-        //
-        //        switch (key.Key) {
-        //            case ConsoleKey.Spacebar:
-        //                if (x + offsetX + typeLength >= Console.WindowWidth - 1)
-        //                    continue;
-        //                data += " ";
-        //                typeLength++;
-        //                break;
-        //            case ConsoleKey.Enter when enforceInput && data.Length <= 0:
-        //                break;
-        //            case ConsoleKey.Enter:
-        //                Console.CursorVisible = false;
-        //                return data;
-        //            case ConsoleKey.Backspace when typeLength > 0:
-        //                data = data.Substring(0, data.Length - 1);
-        //                typeLength--;
-        //                Console.SetCursorPosition(x + offsetX + typeLength, y);
-        //                Console.Write(' ');
-        //                break;
-        //            case ConsoleKey.Escape:
-        //                break;
-        //        }
-        //
-        //        Console.SetCursorPosition(x + offsetX + typeLength, y);
-        //        if (char.IsDigit(key.KeyChar) || char.IsLetter(key.KeyChar)) {
-        //            if (x + offsetX + typeLength >= Console.WindowWidth - 1)
-        //                continue;
-        //
-        //            data += key.KeyChar;
-        //            Console.Write(key.KeyChar.ToString());
-        //            typeLength++;
-        //        }
-        //    }
-        //}
+            Console.CursorVisible = true;
+
+            Console.SetCursorPosition(x + displayText.Length, y);
+            Print(displayText, x, y);
+            Flush();
+            int offsetX = displayText.Length;
+            var data = string.Empty;
+            var typeLength = 0;
+            while (true) {
+                if (!Keyboard.Input.HasValue)
+                    continue;
+
+                var keyPress = Keyboard.Input.Value;
+                Keyboard.Input = null;
+
+                if (!keyPress.KeyDown)
+                    continue;
+
+                switch (keyPress.ConsoleKey) {
+                    case ConsoleKey.Spacebar:
+                        if (x + offsetX + typeLength >= Console.WindowWidth - 1)
+                            continue;
+                        data += " ";
+                        typeLength++;
+                        break;
+                    case ConsoleKey.Enter when enforceInput && data.Length <= 0:
+                    case ConsoleKey.Enter:
+                        Console.CursorVisible = false;
+                        return data;
+                    case ConsoleKey.Backspace when typeLength > 0:
+                        data = data.Substring(0, data.Length - 1);
+                        typeLength--;
+                        Console.SetCursorPosition(x + offsetX + typeLength, y);
+                        Print(' ', x + offsetX + data.Length, y);
+                        Flush();
+                        break;
+                    case ConsoleKey.Escape:
+                        break;
+                }
+
+                if (char.IsDigit(keyPress.Character) || char.IsLetter(keyPress.Character)) {
+                    if (x + offsetX + typeLength >= WinBuf.BufferWidth - 1)
+                        continue;
+
+                    data += keyPress.Character;
+                    Print(keyPress.Character.ToString(), x + offsetX + data.Length - 1, y);
+                    Flush();
+                    typeLength++;
+                }
+
+                Console.SetCursorPosition(x + offsetX + typeLength, y);
+            }
+        }
 
         /**
          * <summary>

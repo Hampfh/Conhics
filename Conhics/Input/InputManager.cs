@@ -17,9 +17,9 @@ namespace Conhics.Input {
             condition: GetIsInputEnabled,
             subscribingMethod: UpdateInput);
 
-        private static Integration.INPUT_RECORD inputRecord = default;
-        private static uint numberOfInputEvents = 0;
-        private static uint numberOfInputEventsRead = 0;
+        private static Integration.INPUT_RECORD s_inputRecord = default;
+        private static uint s_numberOfInputEvents = 0;
+        private static uint s_numberOfInputEventsRead = 0;
 
         internal static IntPtr InputHandle { get; set; }
 
@@ -28,12 +28,12 @@ namespace Conhics.Input {
         internal static bool IsKeyboardEnabled { get; set; }
 
         private static void UpdateInput() {
-            if (numberOfInputEvents == 0) {
+            if (s_numberOfInputEvents == 0) {
                 Integration.ManageNativeReturnValue(
                     returnValue: Integration.GetNumberOfConsoleInputEvents(
                         hConsoleInput: InputHandle,
-                        lpcNumberOfEvents: out numberOfInputEvents));
-                if (!GetIsInputEnabled() || numberOfInputEvents == 0) {
+                        lpcNumberOfEvents: out s_numberOfInputEvents));
+                if (!GetIsInputEnabled() || s_numberOfInputEvents == 0) {
                     return;
                 }
             }
@@ -41,20 +41,20 @@ namespace Conhics.Input {
             Integration.ManageNativeReturnValue(
                 returnValue: Integration.ReadConsoleInput(
                     hConsoleInput: InputHandle,
-                    lpBuffer: ref inputRecord,
+                    lpBuffer: ref s_inputRecord,
                     nLength: 1,
-                    lpNumberOfEventsRead: ref numberOfInputEventsRead /* always equals 1 if nLength: 1 */));
-            numberOfInputEvents -= numberOfInputEventsRead;
-            switch ((EventTypes)inputRecord.EventType) {
+                    lpNumberOfEventsRead: ref s_numberOfInputEventsRead /* always equals 1 if nLength: 1 */));
+            s_numberOfInputEvents -= s_numberOfInputEventsRead;
+            switch ((EventTypes)s_inputRecord.EventType) {
                 case EventTypes.KeyEvent:
-                    Keyboard.Input = new KeyboardInput(inputRecord.KeyEvent);
+                    Keyboard.Input = new KeyboardInput(s_inputRecord.KeyEvent);
                     break;
                 case EventTypes.MouseEvent:
-                    Mouse.Input = new MouseInput(inputRecord.MouseEvent);
+                    Mouse.Input = new MouseInput(s_inputRecord.MouseEvent);
                     break;
                 case EventTypes.WindowBufferSizeEvent:
-                    WinBuf.BufferWidth = inputRecord.WindowBufferSizeEvent.dwSize.X;
-                    WinBuf.BufferHeight = inputRecord.WindowBufferSizeEvent.dwSize.Y;
+                    WinBuf.BufferWidth = s_inputRecord.WindowBufferSizeEvent.dwSize.X;
+                    WinBuf.BufferHeight = s_inputRecord.WindowBufferSizeEvent.dwSize.Y;
                     break;
                 default:
                     return;

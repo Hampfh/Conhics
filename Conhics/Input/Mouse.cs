@@ -14,9 +14,7 @@ namespace Conhics.Input {
         /// </summary>
         /// <value>A value indicating whether mouse input is enabled - true, or disabled - false.</value>
         public static bool IsEnabled {
-            get {
-                return InputManager.IsMouseEnabled;
-            }
+            get => InputManager.IsMouseEnabled;
 
             set {
                 if (value) {
@@ -32,7 +30,14 @@ namespace Conhics.Input {
         /// Gets an instance of the <see cref="MouseInput"/> struct with the most recent mouse input.
         /// </summary>
         /// <value>An instance of the <see cref="MouseInput"/> struct with the most recent mouse input.</value>
-        public static MouseInput Input { get; internal set; }
+        public static MouseInput? Input { get; internal set; }
+
+        /// <summary>
+        /// Clear the latest event. Set to null.
+        /// </summary>
+        public static void ClearLastInput() {
+            Input = null;
+        }
 
         private static void ConfigureConsoleMode(IntPtr inputHandle) {
             int consoleMode = 0;

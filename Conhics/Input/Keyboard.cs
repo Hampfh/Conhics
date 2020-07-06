@@ -7,19 +7,19 @@ namespace Conhics.Input {
     /// Contains functionality for keyboard input.
     /// </summary>
     public class Keyboard {
+
+        private static KeyboardInput? currentInput;
+
         /// <summary>
         /// Gets or sets a value indicating whether keyboard input is enabled - true, or disabled - false.
         /// </summary>
         /// <value>A value indicating whether keyboard input is enabled - true, or disabled - false.</value>
         public static bool IsEnabled {
-            get {
-                return InputManager.IsKeyboardEnabled;
-            }
+            get => InputManager.IsKeyboardEnabled;
 
             set {
-                if (value) {
+                if (value)
                     InputManager.InputHandle = Integration.GetStdHandle((int)Integration.StdHandle.InputHandle);
-                }
 
                 InputManager.IsKeyboardEnabled = value;
             }
@@ -29,6 +29,13 @@ namespace Conhics.Input {
         /// Gets an instance of the <see cref="KeyboardInput"/> struct with the most recent keyboard input.
         /// </summary>
         /// <value>An instance of the <see cref="KeyboardInput"/> struct with the most recent keyboard input.</value>
-        public static KeyboardInput Input { get; internal set; }
+        public static KeyboardInput? Input { get; internal set; }
+
+        /// <summary>
+        /// Clear the latest event. Set to null.
+        /// </summary>
+        public static void ClearLastInput() {
+            Input = null;
+        }
     }
 }

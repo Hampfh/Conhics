@@ -1,14 +1,13 @@
-﻿using System;
-using System.ComponentModel;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-using Microsoft.Win32.SafeHandles;
-
-[assembly: InternalsVisibleTo("Congui")]
+﻿[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Congui")]
 
 namespace Conhics {
+    using System;
+    using System.ComponentModel;
+    using System.IO;
+    using System.Runtime.InteropServices;
+
+    using Microsoft.Win32.SafeHandles;
+
     internal class Integration {
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern SafeFileHandle CreateFile(
@@ -93,7 +92,7 @@ namespace Conhics {
         );
 
         public enum StdHandle {
-            InputHandle = -10,  // Used for mouse input
+            InputHandle = -10,
             OutputHandle = -11
         }
         // End console output-specific members
@@ -158,7 +157,74 @@ namespace Conhics {
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GetNumberOfConsoleInputEvents(IntPtr hConsoleInput, out uint lpcNumberOfEvents);
+        // End console input-specific members
+
+        // Begin console screen-specific members
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SMALL_RECT {
+            public short Left;
+            public short Top;
+            public short Right;
+            public short Bottom;
+        }
         
+        [StructLayout(LayoutKind.Sequential)]
+        public struct COLORREF {
+            public uint dwColor;
+
+            // public COLORREF(Color color) {
+            //     this.dwColor = color.R + (((uint)color.G) << 8) + (((uint)color.B) << 16);
+            // }
+
+            public COLORREF(uint r, uint g, uint b) {
+                this.dwColor = r + (g << 8) + (b << 16);
+            }
+
+            // public Color ToColor() {
+            //     return Color.FromArgb(
+            //         red: (int)(0x000000FFU & this.dwColor),
+            //         green: (int)(0x0000FF00U & this.dwColor) >> 8,
+            //         blue: (int)(0x00FF0000U & this.dwColor) >> 16);
+            // }
+
+            // public void SetColor(Color color) {
+            //     this.dwColor = color.R + (((uint)color.G) << 8) + (((uint)color.B) << 16);
+            // }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct CONSOLE_SCREEN_BUFFER_INFO_EX {
+            public int cbSize;
+            public COORD dwSize;
+            public COORD dwCursorPosition;
+            public ushort wAttributes;
+            public SMALL_RECT srWindow;
+            public COORD dwMaximumWindowSize;
+            public ushort wPopupAttributes;
+            public bool bFullscreenSupported;
+            public COLORREF Black;
+            public COLORREF DarkBlue;
+            public COLORREF DarkGreen;
+            public COLORREF DarkCyan;
+            public COLORREF DarkRed;
+            public COLORREF DarkMagenta;
+            public COLORREF DarkYellow;
+            public COLORREF Gray;
+            public COLORREF DarkGray;
+            public COLORREF Blue;
+            public COLORREF Green;
+            public COLORREF Cyan;
+            public COLORREF Red;
+            public COLORREF Magenta;
+            public COLORREF Yellow;
+            public COLORREF White;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool GetConsoleScreenBufferInfoEx(SafeFileHandle hConsoleOutput, ref CONSOLE_SCREEN_BUFFER_INFO_EX csbe);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetConsoleScreenBufferInfoEx(SafeFileHandle hConsoleOutput, ref CONSOLE_SCREEN_BUFFER_INFO_EX csbe);
 
 
         public static void ManageNativeReturnValue<T>(T returnValue) {

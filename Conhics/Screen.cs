@@ -1,6 +1,7 @@
 ﻿namespace Conhics {
     using System;
     using System.IO;
+    using System.Numerics;
     using System.Runtime.InteropServices;
     using Conhics.Input;
     using Microsoft.Win32.SafeHandles;
@@ -14,7 +15,7 @@
      * </summary>
      */
     public class Screen {
-        private static SafeFileHandle s_handle;
+        internal static SafeFileHandle s_handle;
         private static Integration.CharInfo[] s_virtualWin;
         private static Integration.SmallRect s_rect;
         private static int s_width;
@@ -149,7 +150,11 @@
          * </summary>
          */
         public static char GetPos(int x, int y) {
-            return s_virtualWin[y * s_width + x].Char.UnicodeChar;
+            return s_virtualWin[GetIndex(x, y)].Char.UnicodeChar;
+        }
+
+        public static int GetIndex(int x, int y) {
+            return y * s_width + x;
         }
 
         /**
@@ -165,11 +170,15 @@
                 throw new Exception("Out of bounds");
 
             // Don't print a character if it already exists
-            if (s_virtualWin[y * s_width + x].Char.UnicodeChar.Equals(character))
+            if (s_virtualWin[GetIndex(x, y)].Char.UnicodeChar.Equals(character))
                 return;
 
-            s_virtualWin[y * s_width + x].Attributes = (short)color;
-            s_virtualWin[y * s_width + x].Char.UnicodeChar = character;
+            s_virtualWin[GetIndex(x, y)].Attributes = (short)color;
+            s_virtualWin[GetIndex(x, y)].Char.UnicodeChar = character;
+        }
+
+        public static void Print(char character, int x, int y, Color.ConhicsColor conhicsColor) {
+            Print(character, x, y, conhicsColor.ConsoleColor);
         }
 
         /**
@@ -191,8 +200,21 @@
                 text = text.Substring(0, text.Length - (x + text.Length - s_width));
 
             for (var i = 0; i < text.Length; i++) {
-                s_virtualWin[y * s_width + x + i].Attributes = (short)color;
-                s_virtualWin[y * s_width + x + i].Char.UnicodeChar = text[i];
+                s_virtualWin[GetIndex(x, y) + i].Attributes = (short)color;
+                s_virtualWin[GetIndex(x, y) + i].Char.UnicodeChar = text[i];
+            }
+        }
+
+        public static void DrawQuadraticBezier(Vector2 point1, Vector2 controlPoint, Vector2 point2, char character, ConsoleColor color = ConsoleColor.White) {
+            // TODO: implement curve "quality"/"exactness"
+            // float pointsDistance = Vector2.Distance(point1, point2) + Vector2.Distance(point2, point3);
+            int iterations = 100;   // temporary "quality"/"exactness"
+            for (int i = 0; i < iterations; i++) {
+                Vector2 pointToDraw = (1 - i) * (1 - i) * point1 +
+                                        2 * i * (1 - i) * controlPoint +
+                                        i * i * point2;
+                s_virtualWin[GetIndex((int)pointToDraw.X, (int)pointToDraw.Y) + i].Attributes = (short)color;
+                s_virtualWin[GetIndex((int)pointToDraw.X, (int)pointToDraw.Y) + i].Char.UnicodeChar = character;
             }
         }
 

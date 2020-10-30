@@ -35,7 +35,7 @@ namespace Conhics.Input {
                 if (inputQueue.TryDequeue(out var firstInput))
                     return firstInput;
 
-                return LastInput;
+                return null;
             }
         }
 
